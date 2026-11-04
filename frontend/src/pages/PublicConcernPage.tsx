@@ -68,8 +68,8 @@ export const PublicConcernPage: React.FC<PublicConcernPageProps> = ({ onBackToAp
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 py-6 sm:py-10 px-3 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
         {/* Navigation & Header */}
         <div className="flex items-center justify-between">
           <button
@@ -145,7 +145,7 @@ export const PublicConcernPage: React.FC<PublicConcernPageProps> = ({ onBackToAp
           </div>
         ) : (
           /* Public Report Form */
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-8 space-y-6">
             <div className="border-b border-slate-100 pb-4">
               <h1 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
                 <Shield className="w-6 h-6 text-indigo-600" />

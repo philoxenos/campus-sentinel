@@ -31,17 +31,21 @@ For client presentations and grading demonstrations, 1-click quick persona switc
 
 ## 📦 Implemented Modules
 
-1. **Authentication & Authorization (RBAC)**:
+1. **Authentication & Authorization (RBAC) & Account Status**:
    - Google Sign-In support (accepts any registered Google email in user management).
    - Super Admin local authentication.
    - JWT token issuance and strict role-based route guards.
+   - **Account Status Management**: Option for Super Admin to activate or deactivate/disable user accounts with immediate session revocation, self-deactivation protection, and RA 10173 audit logging.
 2. **Kudos Wall (Good Vibes Only)**:
    - Positive peer recognition board.
    - Real-time dual-language (English + Tagalog) harmful/offensive word filter.
    - Blocks negative submissions with toast: *"Harmful words detected. The Kudos Wall is reserved for uplifting messages only."*
-3. **Daily Mood Check-In (Clickable Calendar)**:
+3. **Daily Mood Check-In & Emotional Wellness Monitoring**:
    - Month-view calendar displaying emoji mood entries (1 to 5 scale).
    - Click past dates to view reflection notes; log today's mood with 1 click.
+   - **Guidance Counselor Visibility**: Counselors can view student mood check-in timelines and emotional wellness notes inside the 360° Behavioral Profile Drilldown Modal as well as via the dedicated **Student Mood Check-Ins Feed** tab.
+   - **Flag Rule (3+ Sad/Angry/Anxious)**: Sustained low mood submissions trigger early warning risk elevation for counselor intervention.
+   - **Privacy Disclosure**: Explicit disclosure banner informing students that mood logs are confidential and visible only to them and their assigned Guidance Counselor (not teachers or peers).
 4. **Vent Space & Comfort Messages**:
    - Confidential 1-on-1 messaging channel strictly between student and assigned counselor.
    - Comfort Message mode selector: Scripture Verses, Inspirational Quotes, Mindfulness Grounding.

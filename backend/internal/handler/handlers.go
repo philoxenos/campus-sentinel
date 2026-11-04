@@ -34,8 +34,13 @@ func Login(c *gin.Context) {
 	}
 
 	var user model.User
-	if err := database.DB.Where("email = ? AND is_active = ?", req.Email, true).First(&user).Error; err != nil {
+	if err := database.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or credentials"})
+		return
+	}
+
+	if !user.IsActive {
+		c.JSON(http.StatusForbidden, gin.H{"error": "This account has been deactivated. Please contact the administrator."})
 		return
 	}
 
@@ -76,10 +81,15 @@ func GoogleAuth(c *gin.Context) {
 	}
 
 	var user model.User
-	if err := database.DB.Where("email = ? AND is_active = ?", req.Email, true).First(&user).Error; err != nil {
+	if err := database.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "This Google account is not pre-registered in the school directory. Please contact the System Administrator to enroll your account.",
 		})
+		return
+	}
+
+	if !user.IsActive {
+		c.JSON(http.StatusForbidden, gin.H{"error": "This account has been deactivated. Please contact the administrator."})
 		return
 	}
 
@@ -132,6 +142,11 @@ func DemoSwitch(c *gin.Context) {
 	var user model.User
 	if err := database.DB.Preload("StudentProfile.Class").Where("email = ?", targetEmail).First(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Demo user not found"})
+		return
+	}
+
+	if !user.IsActive {
+		c.JSON(http.StatusForbidden, gin.H{"error": "This demo persona account has been deactivated."})
 		return
 	}
 
@@ -361,6 +376,16 @@ func GetMoodCalendar(c *gin.Context) {
 
 	var moods []model.DailyMood
 	database.DB.Where("student_id = ?", targetID).Order("check_date asc").Find(&moods)
+	c.JSON(http.StatusOK, moods)
+}
+
+// GetRecentMoodLogs provides counselors with recent student mood check-ins across all students.
+func GetRecentMoodLogs(c *gin.Context) {
+	var moods []model.DailyMood
+	database.DB.Preload("Student.StudentProfile.Class").
+		Order("check_date desc, id desc").
+		Limit(50).
+		Find(&moods)
 	c.JSON(http.StatusOK, moods)
 }
 
@@ -910,6 +935,51 @@ func UpdateUserRole(c *gin.Context) {
 	database.DB.Save(&user)
 
 	middleware.LogAuditAction(c, "MODIFY_USER", "User", &user.ID, fmt.Sprintf("Changed role from %s to %s", oldRole, req.Role))
+	c.JSON(http.StatusOK, user)
+}
+
+type UpdateUserStatusRequest struct {
+	IsActive bool `json:"is_active"`
+}
+
+func UpdateUserStatus(c *gin.Context) {
+	idParam := c.Param("id")
+	uid, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	adminID := c.MustGet("userID").(uint)
+
+	var req UpdateUserStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Valid status required"})
+		return
+	}
+
+	if adminID == uint(uid) && !req.IsActive {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Administrators cannot deactivate their own account"})
+		return
+	}
+
+	var user model.User
+	if err := database.DB.Preload("StudentProfile.Class").First(&user, uint(uid)).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	user.IsActive = req.IsActive
+	database.DB.Save(&user)
+
+	statusStr := "Deactivated"
+	actionType := "DEACTIVATE_USER"
+	if req.IsActive {
+		statusStr = "Activated"
+		actionType = "ACTIVATE_USER"
+	}
+
+	middleware.LogAuditAction(c, actionType, "User", &user.ID, fmt.Sprintf("%s account for user: %s %s (%s)", statusStr, user.FirstName, user.LastName, user.Email))
 	c.JSON(http.StatusOK, user)
 }
 

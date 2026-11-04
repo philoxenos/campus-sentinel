@@ -32,53 +32,54 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-xs">
       {/* Compliance / Privacy Banner per Client Kickoff Doc */}
-      <div className="bg-slate-900 text-slate-200 px-4 py-1.5 text-xs flex items-center justify-between font-medium">
-        <div className="flex items-center gap-2">
-          <span className="bg-amber-500 text-slate-950 font-bold px-1.5 py-0.5 rounded text-[10px] tracking-wide uppercase">
-            Academic Prototype
+      <div className="bg-slate-900 text-slate-200 px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs flex items-center justify-between font-medium">
+        <div className="flex items-center gap-2 overflow-hidden">
+          <span className="bg-amber-500 text-slate-950 font-bold px-1.5 py-0.5 rounded text-[10px] tracking-wide uppercase shrink-0">
+            UPIS SYSTEM PROTOTYPE
           </span>
-          <span>UPIS Demo Sandbox — Synthetic data only. Compliant with Data Privacy Act (RA 10173).</span>
+          <span className="truncate">Technology Project Management</span>
         </div>
-        <div className="flex items-center gap-4 text-slate-400">
+        <div className="hidden sm:flex items-center gap-3 text-slate-400 shrink-0">
           <span>MSIT 632 Group 10</span>
-          <span>v1.0.0</span>
+          <span>v0.2.0</span>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center gap-2">
           {/* Logo & Title */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-700 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
-              <Shield className="w-6 h-6" />
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-700 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 shrink-0">
+              <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg text-slate-900 tracking-tight">CAMPUS SENTINEL</span>
-                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${activeRoleBadge.color}`}>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-extrabold text-sm sm:text-lg text-slate-900 tracking-tight">CAMPUS SENTINEL</span>
+                <span className={`text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full border ${activeRoleBadge.color}`}>
                   {activeRoleBadge.label}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">School Behavioral Monitoring & Early Warning System</p>
+              <p className="hidden md:block text-[11px] text-slate-500 font-medium">School Behavioral Monitoring & Early Warning System</p>
             </div>
           </div>
 
           {/* Right Controls: Demo Role Switcher & User Profile */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Quick Demo Impersonation Switcher */}
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition"
               >
-                <UserCheck className="w-4 h-4 text-indigo-600" />
-                <span>Switch Demo Persona</span>
+                <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600 shrink-0" />
+                <span className="hidden sm:inline">Switch Demo </span>
+                <span>Persona</span>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
 
               {dropdownOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50"
+                  className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 max-h-[85vh] overflow-y-auto"
                   onClick={() => setDropdownOpen(false)}
                 >
                   <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">

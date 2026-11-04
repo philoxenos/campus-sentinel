@@ -193,10 +193,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
   const activeComfort = comfortSnippets[comfortMode] || comfortSnippets.INSPIRATIONAL_QUOTE;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       {/* 1. Daily Widget: Verse / Word of the Day */}
       {dailyWidget && (
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-6 shadow-xl border border-indigo-700/50">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-4 sm:p-6 shadow-xl border border-indigo-700/50">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="space-y-2 max-w-3xl">
               <div className="flex items-center gap-2">
@@ -206,7 +206,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
                 </span>
                 <span className="text-xs text-indigo-200">Daily Inspiration Widget</span>
               </div>
-              <p className="text-lg md:text-xl font-medium tracking-wide italic leading-relaxed text-indigo-50">
+              <p className="text-base sm:text-lg md:text-xl font-medium tracking-wide italic leading-relaxed text-indigo-50">
                 "{dailyWidget.quote_text}"
               </p>
               {dailyWidget.source_attribution && (
@@ -222,10 +222,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-200 gap-4 text-sm font-semibold">
+      <div className="flex border-b border-slate-200 gap-2 sm:gap-4 text-xs sm:text-sm font-semibold overflow-x-auto pb-px no-scrollbar whitespace-nowrap">
         <button
           onClick={() => setActiveTab('calendar')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'calendar'
               ? 'border-indigo-600 text-indigo-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -236,7 +236,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
         </button>
         <button
           onClick={() => setActiveTab('kudos')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'kudos'
               ? 'border-indigo-600 text-indigo-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -247,7 +247,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
         </button>
         <button
           onClick={() => setActiveTab('vent')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'vent'
               ? 'border-indigo-600 text-indigo-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -260,17 +260,17 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
 
       {/* 2. TAB: Daily Mood Check-In (Interactive Clickable Calendar) */}
       {activeTab === 'calendar' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
           {/* Interactive Month Calendar */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-5 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Monthly Mood Calendar</h2>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">Monthly Mood Calendar</h2>
                 <p className="text-xs text-slate-500">
                   {currentDate.toLocaleString('default', { month: 'long' })} {currentYear} — Click any date to view reflections
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-slate-500">
                 <span className="flex items-center gap-1">🌟 Great</span>
                 <span className="flex items-center gap-1">🙂 Good</span>
                 <span className="flex items-center gap-1">😐 Neutral</span>
@@ -280,7 +280,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
             </div>
 
             {/* Calendar Day Grid */}
-            <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 mb-2">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs font-semibold text-slate-400 mb-2">
               <span>Sun</span>
               <span>Mon</span>
               <span>Tue</span>
@@ -290,9 +290,9 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
               <span>Sat</span>
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {Array.from({ length: firstDayOfWeek }).map((_, idx) => (
-                <div key={`empty-${idx}`} className="h-16 rounded-xl bg-slate-50/50 border border-transparent" />
+                <div key={`empty-${idx}`} className="h-13 sm:h-16 rounded-xl bg-slate-50/50 border border-transparent" />
               ))}
 
               {daysArray.map(({ dayNum, formattedDate, moodEntry }) => {
@@ -315,17 +315,17 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
                         });
                       }
                     }}
-                    className={`h-16 rounded-xl p-1.5 flex flex-col justify-between items-center transition border ${
+                    className={`h-13 sm:h-16 rounded-xl p-1 sm:p-1.5 flex flex-col justify-between items-center transition border ${
                       isToday
                         ? 'ring-2 ring-indigo-500 bg-indigo-50/50'
                         : 'hover:bg-slate-50 bg-white'
                     } ${moodData ? moodData.color : 'border-slate-100'}`}
                   >
-                    <span className={`text-[11px] font-bold ${isToday ? 'text-indigo-700' : 'text-slate-600'}`}>
+                    <span className={`text-[10px] sm:text-[11px] font-bold ${isToday ? 'text-indigo-700' : 'text-slate-600'}`}>
                       {dayNum}
                     </span>
                     {moodData ? (
-                      <span className="text-xl leading-none" title={moodData.label}>
+                      <span className="text-base sm:text-xl leading-none" title={moodData.label}>
                         {moodData.emoji}
                       </span>
                     ) : (
@@ -355,7 +355,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
           </div>
 
           {/* Today's Check-In Form */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-5">
             <div className="space-y-1">
               <h3 className="font-bold text-slate-900 text-base">How are you feeling today?</h3>
               <p className="text-xs text-slate-500">
@@ -366,7 +366,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
             <form onSubmit={handleMoodSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-700">Choose Mood Level</label>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
                   {[
                     { score: 1, emoji: '😫', label: 'Distressed' },
                     { score: 2, emoji: '😔', label: 'Low' },
@@ -378,14 +378,14 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
                       type="button"
                       key={item.score}
                       onClick={() => setSelectedScore(item.score)}
-                      className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition ${
+                      className={`p-2 sm:p-3 rounded-xl border flex flex-col items-center gap-1 transition ${
                         selectedScore === item.score
                           ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-400'
                           : 'border-slate-200 hover:bg-slate-50'
                       }`}
                     >
-                      <span className="text-2xl">{item.emoji}</span>
-                      <span className="text-[10px] font-semibold text-slate-700">{item.label}</span>
+                      <span className="text-xl sm:text-2xl">{item.emoji}</span>
+                      <span className="text-[9px] sm:text-[10px] font-semibold text-slate-700 truncate w-full text-center">{item.label}</span>
                     </button>
                   ))}
                 </div>
@@ -410,6 +410,17 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
                 <span>Save Today's Check-In</span>
               </button>
             </form>
+
+            {/* Visibility & Confidentiality Disclosure Notice (per Prototype spec) */}
+            <div className="p-3.5 bg-indigo-50/80 rounded-xl border border-indigo-200/80 text-[11px] text-indigo-900 flex items-start gap-2.5">
+              <Lock className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-bold block">🔒 Confidentiality & Privacy Notice</span>
+                <span className="text-indigo-800 leading-relaxed block">
+                  Your daily mood entries and reflection notes are strictly private between you and your assigned Guidance Counselor ({currentUser.student_profile?.assigned_counselor ? `${currentUser.student_profile.assigned_counselor.first_name} ${currentUser.student_profile.assigned_counselor.last_name}` : 'Maria Santos'}). Subject teachers, class advisers, and other students cannot view your individual mood logs.
+                </span>
+              </div>
+            </div>
 
             <div className="p-3 bg-amber-50 rounded-xl border border-amber-200/80 text-[11px] text-amber-800 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
@@ -570,35 +581,35 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
 
       {/* 4. TAB: Vent Space */}
       {activeTab === 'vent' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[600px] overflow-hidden">
-            <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[520px] sm:h-[600px] overflow-hidden">
+            <div className="p-3.5 sm:p-4 bg-slate-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-purple-600/30 border border-purple-400 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-purple-300" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-600/30 border border-purple-400 flex items-center justify-center shrink-0">
+                  <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" />
                 </div>
                 <div>
-                  <div className="font-bold text-sm flex items-center gap-2">
+                  <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 flex-wrap">
                     <span>Vent Space — Confidential Channel</span>
-                    <span className="text-[10px] bg-purple-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                    <span className="text-[9px] sm:text-[10px] bg-purple-500 text-white px-2 py-0.5 rounded-full font-semibold">
                       Encrypted / RA 10173
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-[11px] sm:text-xs text-slate-300">
                     Handled by: {ventThread?.counselor ? `${ventThread.counselor.first_name} ${ventThread.counselor.last_name} (Guidance Counselor)` : 'Assigned Guidance Counselor'}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-purple-50 px-4 py-2 text-[11px] text-purple-900 border-b border-purple-100 flex items-center gap-2">
+            <div className="bg-purple-50 px-3 sm:px-4 py-2 text-[10px] sm:text-[11px] text-purple-900 border-b border-purple-100 flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-purple-600 shrink-0" />
               <span>
                 <strong>Confidentiality Notice:</strong> Messages shared here are visible solely to you and your assigned guidance counselor. Homeroom teachers and peers do not have access.
               </span>
             </div>
 
-            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50">
+            <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3 sm:space-y-4 bg-slate-50/50">
               {ventThread?.messages && ventThread.messages.length > 0 ? (
                 ventThread.messages.map((m) => {
                   const isMe = m.sender_id === currentUser.id;
@@ -612,7 +623,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentUser, onSho
                         {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                       <div
-                        className={`max-w-md p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                        className={`max-w-[85%] sm:max-w-md p-3 sm:p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
                           isMe
                             ? 'bg-indigo-600 text-white rounded-br-xs'
                             : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs'

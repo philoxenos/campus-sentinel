@@ -83,6 +83,7 @@ export const api = {
   // Mood Calendar
   getMoodCalendar: (studentId?: number) =>
     request<any[]>(studentId ? `/mood/calendar?student_id=${studentId}` : '/mood/calendar'),
+  getRecentMoodLogs: () => request<any[]>('/mood/recent'),
   submitMoodCheckIn: (data: { check_date: string; score: number; note: string }) =>
     request<any>('/mood/check-in', {
       method: 'POST',
@@ -152,6 +153,11 @@ export const api = {
     request<any>(`/users/${id}/role`, {
       method: 'PUT',
       body: JSON.stringify({ role }),
+    }),
+  updateUserStatus: (id: number, isActive: boolean) =>
+    request<any>(`/users/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ is_active: isActive }),
     }),
   getAuditLogs: () => request<any[]>('/audit-logs'),
 };

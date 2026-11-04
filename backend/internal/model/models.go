@@ -88,6 +88,7 @@ type VentMessage struct {
 type DailyMood struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
 	StudentID uint      `gorm:"not null;index:idx_student_date,unique" json:"student_id"`
+	Student   *User     `gorm:"foreignKey:StudentID" json:"student,omitempty"`
 	CheckDate string    `gorm:"size:20;not null;index:idx_student_date,unique" json:"check_date"` // YYYY-MM-DD
 	Score     int       `gorm:"not null" json:"score"` // 1: Very Bad, 2: Bad, 3: Okay, 4: Good, 5: Great
 	Note      string    `gorm:"size:255" json:"note"`

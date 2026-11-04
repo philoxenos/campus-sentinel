@@ -67,6 +67,7 @@ export interface VentThread {
 export interface DailyMood {
   id: number;
   student_id: number;
+  student?: User;
   check_date: string; // YYYY-MM-DD
   score: number; // 1 to 5
   note?: string;

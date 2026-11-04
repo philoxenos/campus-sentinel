@@ -157,25 +157,25 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentUser, onSho
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       {/* Top Welcome Card */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900">
             Adviser Console: {currentUser.first_name} {currentUser.last_name}
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 mt-0.5">
             Monitor class attendance, student rosters, and log significant behavioral changes.
           </p>
         </div>
 
         {/* Class Selector */}
-        <div className="flex items-center gap-3 text-xs">
-          <label className="font-semibold text-slate-700">Advisory Class:</label>
+        <div className="flex items-center gap-2 sm:gap-3 text-xs w-full md:w-auto">
+          <label className="font-semibold text-slate-700 shrink-0">Advisory Class:</label>
           <select
             value={selectedClassId}
             onChange={(e) => setSelectedClassId(Number(e.target.value))}
-            className="p-2 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+            className="p-2 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-blue-500 focus:outline-hidden w-full md:w-auto"
           >
             {classes.map(c => (
               <option key={c.id} value={c.id}>
@@ -187,10 +187,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentUser, onSho
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-4 text-sm font-semibold">
+      <div className="flex border-b border-slate-200 gap-2 sm:gap-4 text-xs sm:text-sm font-semibold overflow-x-auto pb-px no-scrollbar whitespace-nowrap">
         <button
           onClick={() => setActiveTab('attendance')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'attendance'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -201,7 +201,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentUser, onSho
         </button>
         <button
           onClick={() => setActiveTab('observations')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'observations'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -212,7 +212,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentUser, onSho
         </button>
         <button
           onClick={() => setActiveTab('roster')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'roster'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -225,21 +225,21 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentUser, onSho
 
       {/* 1. TAB: Attendance & Absence Log */}
       {activeTab === 'attendance' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 flex-wrap">
                 <span>Daily Absence & Truancy Tracker</span>
                 <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
                   Feeds Early Warning
                 </span>
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Mark student attendance. 3+ unexcused cuts or absences will raise a watchlist indicator.
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <input
                 type="date"
                 value={attendanceDate}
@@ -248,7 +248,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentUser, onSho
               />
               <button
                 onClick={handleSaveAllAttendance}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5"
+                className="px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 shrink-0"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Save All Records</span>
@@ -256,8 +256,8 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentUser, onSho
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left border-collapse">
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <table className="w-full text-xs text-left border-collapse min-w-[650px]">
               <thead>
                 <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
                   <th className="p-3">Student Name</th>
@@ -481,7 +481,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentUser, onSho
 
       {/* 3. TAB: Class Roster */}
       {activeTab === 'roster' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-4">
           <h2 className="text-base font-bold text-slate-900">Enrolled Students in Advisory Section</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {students.map(p => (

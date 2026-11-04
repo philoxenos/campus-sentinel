@@ -75,8 +75,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className="min-h-[90vh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-10">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-3xl shadow-xl border border-slate-200">
+    <div className="min-h-[85vh] flex flex-col justify-center items-center px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="max-w-md w-full space-y-6 sm:space-y-8 bg-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200">
         {/* Brand */}
         <div className="text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-700 to-blue-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-indigo-200">

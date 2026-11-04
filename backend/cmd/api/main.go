@@ -104,6 +104,7 @@ func main() {
 				counselor.PUT("/cases/:id", handler.UpdateCase)
 
 				counselor.GET("/reports/export-csv", handler.ExportCSV)
+				counselor.GET("/mood/recent", handler.GetRecentMoodLogs)
 			}
 
 			// Super Admin Access
@@ -112,6 +113,7 @@ func main() {
 			{
 				admin.GET("/users", handler.GetUsers)
 				admin.PUT("/users/:id/role", handler.UpdateUserRole)
+				admin.PUT("/users/:id/status", handler.UpdateUserStatus)
 				admin.GET("/audit-logs", handler.GetAuditLogs)
 			}
 		}

@@ -75,6 +75,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		var activeUser model.User
+		if err := database.DB.Select("id", "is_active").First(&activeUser, claims.UserID).Error; err != nil || !activeUser.IsActive {
+			c.JSON(http.StatusForbidden, gin.H{"error": "This user account has been deactivated. Access revoked."})
+			c.Abort()
+			return
+		}
+
 		c.Set("userID", claims.UserID)
 		c.Set("userEmail", claims.Email)
 		c.Set("userRole", claims.Role)

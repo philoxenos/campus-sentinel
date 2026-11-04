@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ShieldAlert, Download, Eye, Clock, AlertCircle, Plus, Search
+  ShieldAlert, Download, Eye, Clock, AlertCircle, Plus, Search,
+  Heart, Sparkles, AlertTriangle, ChevronRight
 } from 'lucide-react';
 import { api } from '../services/api';
-import type { User, RiskEvaluation, IncidentReport, CounselingCase } from '../types';
+import type { User, RiskEvaluation, IncidentReport, CounselingCase, DailyMood } from '../types';
 
 interface CounselorPortalProps {
   currentUser: User;
@@ -11,7 +12,7 @@ interface CounselorPortalProps {
 }
 
 export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, onShowToast }) => {
-  const [activeTab, setActiveTab] = useState<'matrix' | 'incidents' | 'cases'>('matrix');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'incidents' | 'cases' | 'moods'>('matrix');
 
   // Stats & Matrix
   const [stats, setStats] = useState<any>({});
@@ -35,23 +36,29 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
   const [caseSWC, setCaseSWC] = useState('');
   const [casePrincipal, setCasePrincipal] = useState('');
 
+  // Mood Logs Feed
+  const [recentMoods, setRecentMoods] = useState<DailyMood[]>([]);
+  const [moodFilter, setMoodFilter] = useState<'all' | 'distress'>('all');
+
   useEffect(() => {
     loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
     try {
-      const [statsData, matrixData, incData, casesData] = await Promise.all([
+      const [statsData, matrixData, incData, casesData, moodsData] = await Promise.all([
         api.getDashboardStats().catch(() => ({})),
         api.getRiskMatrix().catch(() => []),
         api.getIncidents().catch(() => []),
         api.getCases().catch(() => []),
+        api.getRecentMoodLogs().catch(() => []),
       ]);
 
       setStats(statsData);
       setRiskMatrix(matrixData);
       setIncidents(incData);
       setCases(casesData);
+      setRecentMoods(moodsData);
       if (matrixData.length > 0 && caseStudentId === 0) {
         setCaseStudentId(matrixData[0].student_id);
       }
@@ -109,6 +116,23 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
     }
   };
 
+  const getMoodMeta = (score: number) => {
+    switch (score) {
+      case 5:
+        return { emoji: '🌟', label: 'Great / Happy', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+      case 4:
+        return { emoji: '🙂', label: 'Good / Okay', color: 'bg-blue-50 text-blue-700 border-blue-200' };
+      case 3:
+        return { emoji: '😐', label: 'Neutral', color: 'bg-slate-50 text-slate-700 border-slate-200' };
+      case 2:
+        return { emoji: '😔', label: 'Low / Sad', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+      case 1:
+        return { emoji: '😫', label: 'Distressed / Anxious', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+      default:
+        return { emoji: '—', label: 'Unknown', color: 'bg-slate-50 text-slate-600 border-slate-200' };
+    }
+  };
+
   const filteredMatrix = riskMatrix.filter(item => {
     if (!searchQuery) return true;
     const name = `${item.student?.first_name} ${item.student?.last_name}`.toLowerCase();
@@ -116,33 +140,42 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
     return name.includes(searchQuery.toLowerCase()) || idNum.includes(searchQuery.toLowerCase());
   });
 
+  const filteredMoods = recentMoods.filter(m => {
+    if (moodFilter === 'distress') {
+      return m.score <= 2;
+    }
+    return true;
+  });
+
+  const distressMoodCount = recentMoods.filter(m => m.score <= 2).length;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       {/* 1. Header & Overview KPIs */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <ShieldAlert className="w-6 h-6 text-indigo-600" />
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600 shrink-0" />
               <span>Early Warning & Behavioral Monitoring Console</span>
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 mt-0.5">
               Centralized oversight for UPIS Guidance Office (Grades 7–12). Multi-factor early detection engine.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <a
               href="/api/reports/export-csv"
               download
-              className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-2"
+              className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl shadow-xs transition flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4 text-slate-500" />
               <span>Export CSV Summary</span>
             </a>
             <button
               onClick={() => setShowCaseModal(true)}
-              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-2"
+              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>New Case Record</span>
@@ -151,50 +184,51 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
         </div>
 
         {/* Metric Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase">Monitored Students</div>
-            <div className="text-2xl font-black text-slate-900 mt-1">{stats.total_students || 5}</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <div className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase">Monitored Students</div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{stats.total_students || 5}</div>
             <div className="text-[10px] text-slate-400 mt-0.5">Grades 7-12 enrolled</div>
           </div>
 
-          <div className="bg-rose-50 p-4 rounded-2xl border border-rose-200 shadow-xs">
-            <div className="text-[11px] font-bold text-rose-700 uppercase flex items-center gap-1">
+          <div className="bg-rose-50 p-3.5 sm:p-4 rounded-2xl border border-rose-200 shadow-xs">
+            <div className="text-[10px] sm:text-[11px] font-bold text-rose-700 uppercase flex items-center gap-1">
               <span>🔴 High / Critical</span>
             </div>
-            <div className="text-2xl font-black text-rose-900 mt-1">{stats.critical_count || 1}</div>
+            <div className="text-xl sm:text-2xl font-black text-rose-900 mt-1">{stats.critical_count || 1}</div>
             <div className="text-[10px] text-rose-600 font-medium mt-0.5">Immediate intervention</div>
           </div>
 
-          <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 shadow-xs">
-            <div className="text-[11px] font-bold text-amber-700 uppercase flex items-center gap-1">
+          <div className="bg-amber-50 p-3.5 sm:p-4 rounded-2xl border border-amber-200 shadow-xs">
+            <div className="text-[10px] sm:text-[11px] font-bold text-amber-700 uppercase flex items-center gap-1">
               <span>🟡 Watchlist Tier</span>
             </div>
-            <div className="text-2xl font-black text-amber-900 mt-1">{stats.watchlist_count || 1}</div>
+            <div className="text-xl sm:text-2xl font-black text-amber-900 mt-1">{stats.watchlist_count || 1}</div>
             <div className="text-[10px] text-amber-600 font-medium mt-0.5">Adviser check-in active</div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase">Unverified Reports</div>
-            <div className="text-2xl font-black text-slate-800 mt-1">{stats.unverified_reports || 0}</div>
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <div className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase">Unverified Reports</div>
+            <div className="text-xl sm:text-2xl font-black text-slate-800 mt-1">{stats.unverified_reports || 0}</div>
             <div className="text-[10px] text-slate-400 mt-0.5">Pending counselor triage</div>
           </div>
 
-          <div className="bg-purple-50 p-4 rounded-2xl border border-purple-200 shadow-xs">
-            <div className="text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1">
-              <span>Vent Conversations</span>
+          <div className="bg-purple-50 p-3.5 sm:p-4 rounded-2xl border border-purple-200 shadow-xs col-span-2 sm:col-span-1">
+            <div className="text-[10px] sm:text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1">
+              <Heart className="w-3.5 h-3.5 text-purple-600" />
+              <span>Distress Mood Logs</span>
             </div>
-            <div className="text-2xl font-black text-purple-900 mt-1">{stats.open_vent_threads || 1}</div>
-            <div className="text-[10px] text-purple-600 font-medium mt-0.5">Confidential chats</div>
+            <div className="text-xl sm:text-2xl font-black text-purple-900 mt-1">{distressMoodCount}</div>
+            <div className="text-[10px] text-purple-600 font-medium mt-0.5">Flagged 3+ Sad/Anxious</div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-4 text-sm font-semibold">
+      <div className="flex border-b border-slate-200 gap-2 sm:gap-4 text-xs sm:text-sm font-semibold overflow-x-auto pb-px no-scrollbar whitespace-nowrap">
         <button
           onClick={() => setActiveTab('matrix')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'matrix'
               ? 'border-indigo-600 text-indigo-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -204,8 +238,24 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
           <span>Early Warning Risk Matrix</span>
         </button>
         <button
+          onClick={() => setActiveTab('moods')}
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
+            activeTab === 'moods'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Heart className="w-4 h-4 text-rose-500" />
+          <span>Student Mood Check-Ins ({recentMoods.length})</span>
+          {distressMoodCount > 0 && (
+            <span className="bg-rose-100 text-rose-700 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+              {distressMoodCount} flagged
+            </span>
+          )}
+        </button>
+        <button
           onClick={() => setActiveTab('incidents')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'incidents'
               ? 'border-indigo-600 text-indigo-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -216,7 +266,7 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
         </button>
         <button
           onClick={() => setActiveTab('cases')}
-          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition ${
+          className={`pb-3 px-2 border-b-2 flex items-center gap-2 transition shrink-0 ${
             activeTab === 'cases'
               ? 'border-indigo-600 text-indigo-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -229,7 +279,7 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
 
       {/* 2. TAB: Early Warning Risk Matrix */}
       {activeTab === 'matrix' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-base font-bold text-slate-900">Student Risk Scoring & Indicators</h2>
@@ -250,104 +300,86 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left border-collapse">
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <table className="w-full text-xs text-left border-collapse min-w-[650px]">
               <thead>
                 <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
-                  <th className="p-3">Student</th>
-                  <th className="p-3">Class & Section</th>
+                  <th className="p-3">Student Name</th>
+                  <th className="p-3">Grade & Section</th>
                   <th className="p-3">Risk Tier</th>
-                  <th className="p-3">Score (0-100)</th>
-                  <th className="p-3">Primary Warning Triggers</th>
-                  <th className="p-3 text-right">Action</th>
+                  <th className="p-3">Score</th>
+                  <th className="p-3">Primary Behavioral Triggers</th>
+                  <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredMatrix.map((evalItem) => {
-                  const student = evalItem.student;
-                  let parsedBreakdown: any = {};
+                {filteredMatrix.map((item) => {
+                  let breakdown: any = {};
                   try {
-                    parsedBreakdown = JSON.parse(evalItem.breakdown_json);
+                    breakdown = JSON.parse(item.breakdown_json || '{}');
                   } catch (e) {}
 
+                  const triggers: string[] = breakdown.triggers || [];
+
                   return (
-                    <tr key={evalItem.id} className="hover:bg-slate-50/70 transition">
-                      <td className="p-3 font-semibold text-slate-900 flex items-center gap-2">
+                    <tr key={item.id} className="hover:bg-slate-50/70 transition">
+                      <td className="p-3 font-semibold text-slate-800 flex items-center gap-2">
                         <img
-                          src={student?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student?.first_name}`}
+                          src={item.student?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.student?.first_name}`}
                           alt=""
-                          className="w-7 h-7 rounded-full bg-slate-100"
+                          className="w-7 h-7 rounded-full bg-slate-100 shrink-0"
                         />
                         <div>
-                          <div>{student?.first_name} {student?.last_name}</div>
+                          <div>{item.student?.first_name} {item.student?.last_name}</div>
                           <div className="text-[10px] text-slate-400 font-mono">
-                            {student?.student_profile?.student_id_number}
+                            {item.student?.student_profile?.student_id_number}
                           </div>
                         </div>
                       </td>
-
                       <td className="p-3 text-slate-600">
-                        {student?.student_profile?.class ? (
-                          <span>Grade {student.student_profile.class.grade_level} - {student.student_profile.class.section_name}</span>
+                        {item.student?.student_profile?.class ? (
+                          <span>Grade {item.student.student_profile.class.grade_level} - {item.student.student_profile.class.section_name}</span>
                         ) : '—'}
                       </td>
-
                       <td className="p-3">
                         <span
-                          className={`px-2.5 py-1 rounded-full font-bold text-[10px] border ${
-                            evalItem.risk_level === 'HIGH_CRITICAL'
+                          className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] border ${
+                            item.risk_level === 'HIGH_CRITICAL'
                               ? 'bg-rose-100 text-rose-800 border-rose-300'
-                              : evalItem.risk_level === 'MODERATE'
+                              : item.risk_level === 'MODERATE'
                               ? 'bg-amber-100 text-amber-800 border-amber-300'
                               : 'bg-emerald-100 text-emerald-800 border-emerald-300'
                           }`}
                         >
-                          {evalItem.risk_level.replace('_', ' ')}
+                          {item.risk_level === 'HIGH_CRITICAL' ? '🔴 High / Critical' : item.risk_level === 'MODERATE' ? '🟡 Watchlist' : '🟢 Low / Normal'}
                         </span>
                       </td>
-
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 w-6">{evalItem.total_score}</span>
-                          <div className="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full ${
-                                evalItem.total_score >= 65
-                                  ? 'bg-rose-600'
-                                  : evalItem.total_score >= 30
-                                  ? 'bg-amber-500'
-                                  : 'bg-emerald-500'
-                              }`}
-                              style={{ width: `${Math.min(evalItem.total_score, 100)}%` }}
-                            />
-                          </div>
-                        </div>
+                      <td className="p-3 font-black text-slate-900 text-sm">
+                        {item.total_score} <span className="text-[10px] font-normal text-slate-400">/ 100</span>
                       </td>
-
                       <td className="p-3">
-                        <div className="flex flex-wrap gap-1 max-w-md">
-                          {parsedBreakdown.triggers && parsedBreakdown.triggers.length > 0 ? (
-                            parsedBreakdown.triggers.map((t: string, idx: number) => (
-                              <span
-                                key={idx}
-                                className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px]"
-                              >
+                        {triggers.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-w-sm">
+                            {triggers.slice(0, 2).map((t, idx) => (
+                              <span key={idx} className="bg-slate-100 text-slate-700 text-[10px] px-2 py-0.5 rounded-md font-medium">
                                 {t}
                               </span>
-                            ))
-                          ) : (
-                            <span className="text-slate-400 text-[10px]">Normal baseline</span>
-                          )}
-                        </div>
+                            ))}
+                            {triggers.length > 2 && (
+                              <span className="text-[10px] text-slate-400">+{triggers.length - 2} more</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 text-[11px]">Normal baseline activity</span>
+                        )}
                       </td>
-
                       <td className="p-3 text-right">
                         <button
-                          onClick={() => handleViewProfile(evalItem.student_id)}
-                          className="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-semibold rounded-lg text-[11px] transition flex items-center gap-1 ml-auto"
+                          onClick={() => handleViewProfile(item.student_id)}
+                          className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-xl border border-indigo-200 transition inline-flex items-center gap-1.5"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          <span>360° Profile</span>
+                          <span>View 360° Profile</span>
                         </button>
                       </td>
                     </tr>
@@ -359,114 +391,252 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
         </div>
       )}
 
-      {/* 3. TAB: Incident Triage Queue */}
-      {activeTab === 'incidents' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Incident & Concern Triage Queue</h2>
-            <p className="text-xs text-slate-500">
-              Review public bystander reports, peer submissions, and teacher incident filings. Substantiated reports feed risk calculation.
-            </p>
+      {/* 3. TAB: Student Mood Check-Ins (New Counselor Feature) */}
+      {activeTab === 'moods' && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-rose-500" />
+                <h2 className="text-base font-bold text-slate-900">Student Daily Mood Check-In History</h2>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Submitted daily by students via their personal calendar. Strictly confidential between student & Guidance Counselor.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                <button
+                  onClick={() => setMoodFilter('all')}
+                  className={`px-3 py-1 rounded-lg transition ${
+                    moodFilter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  All Entries ({recentMoods.length})
+                </button>
+                <button
+                  onClick={() => setMoodFilter('distress')}
+                  className={`px-3 py-1 rounded-lg transition flex items-center gap-1.5 ${
+                    moodFilter === 'distress' ? 'bg-rose-50 text-rose-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Flagged Distress ({distressMoodCount})</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left border-collapse">
+          {/* Privacy & Flag Rule Guidance Banner */}
+          <div className="p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl text-xs text-indigo-900 flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <div className="font-bold">Guidance Wellness Protocol (Flag Rule: 3+ Sad / Angry / Anxious)</div>
+              <p className="text-indigo-800 text-[11px] leading-relaxed">
+                Students log their own mood daily (Scores 1 to 5). When a student submits 3 or more low/distressed moods, the early warning risk engine automatically escalates them to the Watchlist tier for counselor outreach.
+              </p>
+            </div>
+          </div>
+
+          {/* Mood Feed Grid / Table */}
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+            <table className="w-full text-xs text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-slate-50 text-slate-500 border-b border-slate-200">
-                  <th className="p-3">Tracking Code</th>
-                  <th className="p-3">Reporter</th>
-                  <th className="p-3">Target Student / Situation</th>
-                  <th className="p-3">Category & Urgency</th>
-                  <th className="p-3">Narrative Summary</th>
-                  <th className="p-3">Triage Status</th>
+                  <th className="p-3">Date</th>
+                  <th className="p-3">Student</th>
+                  <th className="p-3">Class</th>
+                  <th className="p-3">Logged Mood</th>
+                  <th className="p-3">Student Reflection Note</th>
+                  <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {incidents.map((inc) => (
-                  <tr key={inc.id} className="hover:bg-slate-50/70 transition">
-                    <td className="p-3 font-mono font-bold text-indigo-700">{inc.tracking_code}</td>
-                    <td className="p-3 text-slate-600">
-                      <span className="font-semibold text-slate-800">{inc.reporter_type.replace('_', ' ')}</span>
-                      {inc.reporter_contact && <div className="text-[10px] text-slate-400">{inc.reporter_contact}</div>}
-                    </td>
-                    <td className="p-3 font-semibold text-slate-800">
-                      {inc.target_student ? (
-                        <span>{inc.target_student.first_name} {inc.target_student.last_name}</span>
-                      ) : (
-                        <span className="text-slate-500">General Campus Incident</span>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <span className="font-bold text-slate-800 block">{inc.category.replace('_', ' ')}</span>
-                      <span
-                        className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                          inc.urgency === 'CRITICAL_IMMEDIATE'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {inc.urgency}
-                      </span>
-                    </td>
-                    <td className="p-3 max-w-xs text-slate-700 italic">"{inc.narrative}"</td>
-                    <td className="p-3">
-                      <select
-                        value={inc.status}
-                        onChange={(e) => handleUpdateIncidentStatus(inc.id, e.target.value)}
-                        className={`p-1.5 rounded-lg border text-xs font-semibold ${
-                          inc.status === 'SUBSTANTIATED'
-                            ? 'bg-rose-50 text-rose-800 border-rose-200'
-                            : inc.status === 'INVESTIGATING'
-                            ? 'bg-amber-50 text-amber-800 border-amber-200'
-                            : inc.status === 'CLOSED'
-                            ? 'bg-slate-100 text-slate-600 border-slate-200'
-                            : 'bg-sky-50 text-sky-800 border-sky-200'
-                        }`}
-                      >
-                        <option value="UNVERIFIED">Unverified</option>
-                        <option value="INVESTIGATING">Investigating</option>
-                        <option value="SUBSTANTIATED">Substantiated (Flags Student)</option>
-                        <option value="UNSUBSTANTIATED">Unsubstantiated</option>
-                        <option value="CLOSED">Closed</option>
-                      </select>
+                {filteredMoods.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-slate-400">
+                      No mood check-in records found for this filter.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredMoods.map((m) => {
+                    const meta = getMoodMeta(m.score);
+                    const isLow = m.score <= 2;
+
+                    return (
+                      <tr key={m.id} className={`hover:bg-slate-50/70 transition ${isLow ? 'bg-rose-50/30' : ''}`}>
+                        <td className="p-3 font-mono text-slate-500 text-[11px] whitespace-nowrap">
+                          {m.check_date}
+                        </td>
+                        <td className="p-3 font-semibold text-slate-800 flex items-center gap-2">
+                          <img
+                            src={m.student?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.student?.first_name || m.student_id}`}
+                            alt=""
+                            className="w-7 h-7 rounded-full bg-slate-100 shrink-0"
+                          />
+                          <div>
+                            <div>{m.student ? `${m.student.first_name} ${m.student.last_name}` : `Student #${m.student_id}`}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">{m.student?.email}</div>
+                          </div>
+                        </td>
+                        <td className="p-3 text-slate-600">
+                          {m.student?.student_profile?.class ? (
+                            <span>Gr. {m.student.student_profile.class.grade_level} - {m.student.student_profile.class.section_name}</span>
+                          ) : '—'}
+                        </td>
+                        <td className="p-3">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${meta.color}`}>
+                            <span className="text-base">{meta.emoji}</span>
+                            <span>{meta.label} ({m.score}/5)</span>
+                          </span>
+                        </td>
+                        <td className="p-3 text-slate-700 italic max-w-xs">
+                          {m.note ? `"${m.note}"` : <span className="text-slate-400 not-italic">No note attached</span>}
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => handleViewProfile(m.student_id)}
+                            className="px-2.5 py-1 bg-white hover:bg-slate-50 text-indigo-700 border border-indigo-200 text-xs font-semibold rounded-lg shadow-xs transition inline-flex items-center gap-1"
+                          >
+                            <span>Inspect 360°</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* 4. TAB: Counselor Case Records */}
+      {/* 4. TAB: Incident Triage Queue */}
+      {activeTab === 'incidents' && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-6">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Incident Triage & Verification</h2>
+            <p className="text-xs text-slate-500">
+              Review submitted public & internal incident reports. Substantiating reports feeds the early detection matrix.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {incidents.map((inc) => (
+              <div
+                key={inc.id}
+                className={`p-4 sm:p-5 rounded-2xl border transition space-y-3 ${
+                  inc.urgency === 'CRITICAL_IMMEDIATE'
+                    ? 'border-rose-300 bg-rose-50/50'
+                    : inc.status === 'SUBSTANTIATED'
+                    ? 'border-indigo-200 bg-indigo-50/30'
+                    : 'border-slate-200 bg-white'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      {inc.tracking_code}
+                    </span>
+                    <span
+                      className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                        inc.category === 'WEAPON_THREAT' || inc.category === 'PHYSICAL_VIOLENCE'
+                          ? 'bg-rose-100 text-rose-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {inc.category.replace('_', ' ')}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {new Date(inc.incident_date).toLocaleDateString()} at {inc.location}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-slate-500 font-semibold">Triage Status:</span>
+                    <select
+                      value={inc.status}
+                      onChange={(e) => handleUpdateIncidentStatus(inc.id, e.target.value)}
+                      className="text-xs font-bold p-1.5 rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                    >
+                      <option value="UNVERIFIED">UNVERIFIED (Pending)</option>
+                      <option value="INVESTIGATING">INVESTIGATING</option>
+                      <option value="SUBSTANTIATED">SUBSTANTIATED (Verified Risk)</option>
+                      <option value="UNSUBSTANTIATED">UNSUBSTANTIATED</option>
+                      <option value="CLOSED">CLOSED</option>
+                    </select>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-800 leading-relaxed font-serif bg-white p-3 rounded-xl border border-slate-100 shadow-2xs">
+                  "{inc.narrative}"
+                </p>
+
+                <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 pt-1">
+                  <div>
+                    Reporter: <span className="font-semibold text-slate-700">{inc.reporter_type.replace('_', ' ')}</span>
+                    {inc.reporter_contact && ` (${inc.reporter_contact})`}
+                  </div>
+                  <div>
+                    Target Student:{' '}
+                    {inc.target_student ? (
+                      <button
+                        onClick={() => handleViewProfile(inc.target_student_id!)}
+                        className="font-bold text-indigo-600 hover:underline"
+                      >
+                        {inc.target_student.first_name} {inc.target_student.last_name}
+                      </button>
+                    ) : (
+                      'Unspecified / Under Review'
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 5. TAB: Counselor Case Records */}
       {activeTab === 'cases' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900">Counselor Case Records & Interventions</h2>
+              <h2 className="text-base font-bold text-slate-900">Official Counseling Case Files</h2>
               <p className="text-xs text-slate-500">
-                Official confidential counseling log, Student Welfare Committee (SWC) referrals, and sanctions.
+                Documented case notes, SWC recommendations, and administrative principal actions.
               </p>
             </div>
+
             <button
               onClick={() => setShowCaseModal(true)}
-              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              <span>Create Case Record</span>
+              <span>Create New Case</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
             {cases.map((c) => (
-              <div key={c.id} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
-                <div className="flex justify-between items-start">
+              <div key={c.id} className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-white space-y-4 shadow-xs">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm">{c.case_title}</h3>
                     <div className="text-xs text-slate-500">
-                      Subject Student: {c.student ? `${c.student.first_name} ${c.student.last_name}` : `ID #${c.student_id}`}
+                      Student:{' '}
+                      <button
+                        onClick={() => handleViewProfile(c.student_id)}
+                        className="font-semibold text-indigo-600 hover:underline"
+                      >
+                        {c.student?.first_name} {c.student?.last_name}
+                      </button>{' '}
+                      • Updated: {new Date(c.updated_at).toLocaleDateString()}
                     </div>
                   </div>
+
                   <span className="bg-purple-100 text-purple-800 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
                     {c.stage.replace('_', ' ')}
                   </span>
@@ -491,7 +661,7 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-[11px] text-slate-400 pt-2 border-t border-slate-100">
                   <span>Parent Notified: {c.parent_notified ? '✓ Yes' : 'Pending'}</span>
                   <span>Handled by: {c.counselor ? `${c.counselor.first_name} ${c.counselor.last_name}` : 'Counselor'}</span>
                 </div>
@@ -503,8 +673,8 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
 
       {/* Modal: 360 Degree Student Behavioral Profile Drilldown */}
       {selectedStudentProfile && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-100 space-y-6 my-8 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-100 space-y-6 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start border-b border-slate-200 pb-4">
               <div className="flex items-center gap-3">
                 <img
@@ -526,7 +696,7 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
               <div className="text-right">
                 <button
                   onClick={() => setSelectedStudentProfile(null)}
-                  className="text-slate-400 hover:text-slate-600 text-sm font-bold"
+                  className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 rounded-lg hover:bg-slate-100 transition"
                 >
                   ✕ Close
                 </button>
@@ -555,6 +725,72 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
                 </span>
               </div>
             )}
+
+            {/* Daily Mood Check-In History (Added for Guidance Counselor View) */}
+            <div className="p-4 rounded-xl border border-rose-200/80 bg-rose-50/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                  <Heart className="w-4 h-4 text-rose-500" />
+                  <span>Student Daily Mood Check-Ins & Emotional Wellness</span>
+                </div>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  {selectedStudentProfile.moods?.length || 0} Entries Logged
+                </span>
+              </div>
+
+              {/* Check if student triggered 3+ Sad/Angry/Anxious moods */}
+              {(() => {
+                const studentMoods: DailyMood[] = selectedStudentProfile.moods || [];
+                const lowMoods = studentMoods.filter(m => m.score <= 2);
+                const hasFlag = lowMoods.length >= 3;
+
+                return (
+                  <>
+                    {hasFlag && (
+                      <div className="p-2.5 bg-rose-100/80 border border-rose-300 rounded-xl text-xs text-rose-950 flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        <div>
+                          <strong>⚠️ Sustained Distress Flag Triggered:</strong> Student has logged {lowMoods.length} entries of low or distressed mood (Score ≤ 2).
+                          Per protocol (3+ Sad/Angry/Anxious), proactive counselor check-in or Vent Space engagement is recommended.
+                        </div>
+                      </div>
+                    )}
+
+                    {studentMoods.length > 0 ? (
+                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        {studentMoods.map((m: any) => {
+                          const meta = getMoodMeta(m.score);
+                          return (
+                            <div
+                              key={m.id}
+                              className={`p-2.5 rounded-xl border text-xs space-y-1 ${
+                                m.score <= 2 ? 'bg-rose-50/70 border-rose-200' : 'bg-white border-slate-200'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-base leading-none">{meta.emoji}</span>
+                                  <span className="font-bold text-slate-800">{meta.label}</span>
+                                  <span className="text-[10px] text-slate-400 font-mono">({m.score}/5)</span>
+                                </div>
+                                <span className="font-mono text-[10px] text-slate-500">{m.check_date}</span>
+                              </div>
+                              {m.note && (
+                                <p className="text-slate-600 text-[11px] italic pl-6">
+                                  "{m.note}"
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-slate-400 text-xs italic">No mood check-ins submitted yet by this student.</p>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
 
             {/* Attendance & Behavioral Indicators */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -627,11 +863,11 @@ export const CounselorPortal: React.FC<CounselorPortalProps> = ({ currentUser, o
 
       {/* Modal: Create Case Record */}
       {showCaseModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center">
               <h3 className="font-bold text-slate-900 text-base">New Counseling Case Record</h3>
-              <button onClick={() => setShowCaseModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <button onClick={() => setShowCaseModal(false)} className="text-slate-400 hover:text-slate-600 font-bold p-1">✕</button>
             </div>
 
             <form onSubmit={handleCreateCase} className="space-y-4 text-xs">
